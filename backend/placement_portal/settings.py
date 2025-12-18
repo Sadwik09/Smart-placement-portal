@@ -89,8 +89,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'placement_portal.wsgi.application'
 
-# Database
-# Use DATABASE_URL for production (Heroku, Railway, Render)
+# Database Configuration
+# MongoDB Connection (for app data)
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://sadwik1409_db_user:SadwikSimply09@smart-placement-portal.pt0axg9.mongodb.net/')
+MONGODB_NAME = os.environ.get('MONGODB_NAME', 'smart_placement_portal')
+
+# SQLite for Django admin and auth (required for Django)
 import dj_database_url
 
 if os.environ.get('DATABASE_URL'):
@@ -102,13 +106,26 @@ if os.environ.get('DATABASE_URL'):
         )
     }
 else:
-    # Development - SQLite
+    # Development - SQLite for Django admin/auth system
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+# MongoDB Client Configuration
+try:
+    from pymongo import MongoClient
+    mongo_client = MongoClient(MONGODB_URI)
+    mongo_db = mongo_client[MONGODB_NAME]
+    # Test connection
+    mongo_client.server_info()
+    print(f"✅ Connected to MongoDB: {MONGODB_NAME}")
+except Exception as e:
+    print(f"❌ MongoDB Connection Error: {e}")
+    mongo_client = None
+    mongo_db = None
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
